@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Add Multiple Entries</h1>
+    
+    <form method="POST" action="{{ url_for('main.create_multiple') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        
+        <textarea name="text" placeholder="Enter items separated by commas" autofocus></textarea>
+        <div class="delimiter-input">
+            <label for="delimiter">Delimiter:</label>
+            <input type="text" name="delimiter" value="," size="2">
+        </div>
+        <button type="submit" class="modern-button save-button">Save List</button>
+    </form>
+{% endblock %}

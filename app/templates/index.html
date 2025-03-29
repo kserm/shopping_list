@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Shopping Lists</h1>
+    
+    <ul class="year-list">
+        {% for year in organized %}
+            <li class="year-month-item">
+                <a href="#" onclick="toggleMonthList('{{ year }}')">{{ year }}</a>
+                <ul class="month-list" id="month-{{ year }}" style="display: none;">
+                    {% for month in organized[year] %}
+                        <li class="year-month-item">
+                            <a href="#" onclick="toggleDayList('{{ year }}-{{ month }}')">
+                                {{ month|format_month }}
+                            </a>
+                            <ul class="day-list" id="day-{{ year }}-{{ month }}" style="display: none;">
+                                {% for day in organized[year][month] %}
+                                    <li class="day-item">
+                                        <a href="{{ url_for('main.view_list', year=year, month=month, day=day) }}">
+                                            {{ day }} - {{ organized[year][month][day]|length }} list(s)
+                                        </a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </li>
+        {% else %}
+            <li class="no-lists">No shopping lists yet</li>
+        {% endfor %}
+    </ul>
+
+    <script>
+        function toggleMonthList(year) {
+            const monthList = document.getElementById(`month-${year}`);
+            monthList.style.display = monthList.style.display === 'none' ? 'block' : 'none';
+        }
+        
+        function toggleDayList(yearMonth) {
+            const dayList = document.getElementById(`day-${yearMonth}`);
+            dayList.style.display = dayList.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // Highlight current year/month when page loads if in URL
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const year = urlParams.get('year');
+            const month = urlParams.get('month');
+            
+            if (year) {
+                const yearElement = document.querySelector(`.year-month-item a[onclick*="${year}"]`);
+                if (yearElement) {
+                    yearElement.parentElement.style.backgroundColor = '#e0e0ff';
+                    toggleMonthList(year);
+                    
+                    if (month) {
+                        const monthElement = document.querySelector(`.year-month-item a[onclick*="${year}-${month}"]`);
+                        if (monthElement) {
+                            monthElement.parentElement.style.backgroundColor = '#e0e0ff';
+                            toggleDayList(`${year}-${month}`);
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+{% endblock %}

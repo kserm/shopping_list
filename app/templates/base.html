@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Shopping List</title>
+        <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+        <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+        
+        <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 
+                        'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            max-width: 100%;
+            overflow-x: hidden;
+            background-color: #f8f8fa;
+        }
+        .container {
+            padding: 15px;
+            padding-bottom: 100px; /* Space for fixed buttons */
+        }
+        
+        /* Navigation Styles */
+        .fixed-buttons {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            background: white;
+            padding: 12px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            gap: 8px;
+        }
+        .fixed-buttons button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: #007AFF;
+            color: white;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .fixed-buttons button:hover {
+            background: #0062CC;
+        }
+        
+        /* List Styles */
+        .year-list, .month-list, .day-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .year-month-item {
+            background-color: #f5f5f7;
+            border-radius: 10px;
+            margin: 6px 0;
+            transition: background-color 0.2s;
+        }
+        .year-month-item:hover {
+            background-color: #e5e5ea;
+        }
+        .year-month-item a {
+            display: block;
+            padding: 14px 16px;
+            color: #007AFF;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .day-item {
+            background-color: #f9f9f9;
+            margin: 4px 0;
+            border-radius: 8px;
+        }
+        .day-item a {
+            display: block;
+            padding: 12px 16px 12px 28px;
+            color: #007AFF;
+            text-decoration: none;
+        }
+        
+        /* Shopping List Styles */
+        .shopping-list {
+            background: white;
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+        .list-entries {
+            margin: 12px 0;
+        }
+        .entry {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 8px 0;
+            padding: 10px;
+            border-radius: 8px;
+            background: #f8f8f8;
+        }
+        .entry input[type="checkbox"] {
+            width: 22px;
+            height: 22px;
+            min-width: 22px;
+            min-height: 22px;
+            accent-color: #007AFF;
+            cursor: pointer;
+        }
+        .entry.checked span {
+            text-decoration: line-through;
+            color: #888;
+        }
+        
+        /* Button Styles */
+        .modern-button {
+            padding: 14px 24px;
+            border: none;
+            border-radius: 8px;
+            background: #007AFF;
+            color: white;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        .modern-button:hover {
+            background: #0062CC;
+            transform: translateY(-1px);
+        }
+        .save-button {
+            background: #34C759;
+        }
+        .save-button:hover {
+            background: #248A3D;
+        }
+        .cancel-button {
+            background: #FF3B30;
+        }
+        .cancel-button:hover {
+            background: #D70015;
+        }
+        
+        /* Form Styles */
+        textarea {
+            width: 100%;
+            height: 200px;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 16px;
+            resize: vertical;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+    
+    <div class="fixed-buttons">
+        <button onclick="window.location.href='{{ url_for('main.create') }}'">Create new</button>
+        <button onclick="window.location.href='{{ url_for('main.index') }}'">All lists</button>
+        <button onclick="window.location.href='{{ url_for('main.settings') }}'">Settings</button>
+    </div>
+</body>
+</html>

@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Create New Shopping List</h1>
+    
+    <form method="POST" action="{{ url_for('main.create') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        
+        <div class="button-group">
+            <button type="button" class="modern-button" onclick="addEntry()">Add new entry</button>
+            <button type="button" class="modern-button" onclick="window.location.href='{{ url_for('main.create_multiple') }}'">Add multiple entries</button>
+        </div>
+        
+        <div id="entries-container">
+            <!-- Entries will be added here -->
+        </div>
+        
+        <input type="hidden" name="entries" id="entries-input">
+        <input type="hidden" name="checked_states" id="checked-states-input">
+        
+        <button type="submit" class="modern-button save-button">Save List</button>
+    </form>
+    
+    <script>
+    function addEntry() {
+        const container = document.getElementById('entries-container');
+        const entryId = Date.now();
+        
+        const entryDiv = document.createElement('div');
+        entryDiv.className = 'entry';
+        entryDiv.innerHTML = `
+            <input type="checkbox" id="check-${entryId}" onchange="updateCheckedStates()">
+            <input type="text" id="entry-${entryId}" oninput="updateHiddenInput()" autofocus>
+        `;
+        
+        container.appendChild(entryDiv);
+        document.getElementById(`entry-${entryId}`).focus();
+        updateHiddenInput();
+    }
+    
+    function updateHiddenInput() {
+        const entries = [];
+        const checkedStates = [];
+        const inputs = document.querySelectorAll('#entries-container input[type="text"]');
+        
+        inputs.forEach(input => {
+            if (input.value.trim()) {
+                const checkbox = input.previousElementSibling;
+                const checked = checkbox.checked ? 'x' : ' ';
+                entries.push(`- [${checked}] ${input.value.trim()}`);
+                checkedStates.push(checkbox.checked);
+            }
+        });
+        
+        document.getElementById('entries-input').value = entries.join('\n');
+        document.getElementById('checked-states-input').value = JSON.stringify(checkedStates);
+    }
+    
+    function updateCheckedStates() {
+        updateHiddenInput();
+    }
+    </script>
+{% endblock %}

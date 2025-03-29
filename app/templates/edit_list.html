@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Edit Shopping List</h1>
+    
+    <form method="POST" action="{{ url_for('main.edit_list', list_id=lst.id) }}">
+        <div class="form-group">
+            <label for="date">Date:</label>
+            <input type="date" id="date" name="date" 
+                value="{{ lst.created_at.strftime('%Y-%m-%d') }}">
+        </div>
+        
+        <div class="entry-controls">
+            <button type="button" class="modern-button" onclick="addEntry()">Add Entry</button>
+            <button type="button" class="modern-button" onclick="removeLastEntry()">Remove Last</button>
+        </div>
+        
+        <div id="entries-container">
+            {% for entry in lst.entries.split('\n') if entry.strip() %}
+                <div class="entry">
+                    <input type="checkbox" {% if entry.startswith('- [x]') %}checked{% endif %}
+                        onchange="updateEntryState(this)">
+                    <input type="text" value="{{ entry[5:] }}" 
+                        oninput="updateEntries()">
+                    <button type="button" class="delete-entry" onclick="removeEntry(this)">×</button>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <textarea id="entries-textarea" name="entries" style="display:none;"></textarea>
+        
+        <div class="form-actions">
+            <button type="submit" class="modern-button save-button">Save Changes</button>
+            <a href="{{ url_for('main.view_list', year=lst.created_at.year, month=lst.created_at.month, day=lst.created_at.day) }}" 
+                class="modern-button cancel-button">Cancel</a>
+        </div>
+    </form>
+    
+    <script>
+    function updateEntries() {
+        const entries = [];
+        const container = document.getElementById('entries-container');
+        const inputs = container.querySelectorAll('.entry input[type="text"]');
+        const checkboxes = container.querySelectorAll('.entry input[type="checkbox"]');
+        
+        inputs.forEach((input, index) => {
+            if (input.value.trim()) {
+                const checked = checkboxes[index].checked ? 'x' : ' ';
+                entries.push(`- [${checked}] ${input.value.trim()}`);
+            }
+        });
+        
+        document.getElementById('entries-textarea').value = entries.join('\n');
+    }
+    
+    function addEntry() {
+        const container = document.getElementById('entries-container');
+        const entryDiv = document.createElement('div');
+        entryDiv.className = 'entry';
+        entryDiv.innerHTML = `
+            <input type="checkbox" onchange="updateEntries()">
+            <input type="text" placeholder="New item" oninput="updateEntries()">
+            <button type="button" class="delete-entry" onclick="removeEntry(this)">×</button>
+        `;
+        container.appendChild(entryDiv);
+        entryDiv.querySelector('input[type="text"]').focus();
+    }
+    
+    function removeLastEntry() {
+        const container = document.getElementById('entries-container');
+        const entries = container.querySelectorAll('.entry');
+        if (entries.length > 0) {
+            entries[entries.length - 1].remove();
+            updateEntries();
+        }
+    }
+
+    function removeEntry(button) {
+        button.parentElement.remove();
+        updateEntries();
+    }
+    
+    function removeLastEntry() {
+        const entries = document.getElementById('entries-container').children;
+        if (entries.length > 0) {
+            entries[entries.length - 1].remove();
+            updateEntries();
+        }
+    }
+    
+    function updateEntryState(checkbox) {
+        updateEntries();
+        const textInput = checkbox.nextElementSibling;
+        textInput.style.textDecoration = checkbox.checked ? 'line-through' : 'none';
+    }
+    
+    // Initialize
+    document.querySelectorAll('.entry input[type="checkbox"]').forEach(checkbox => {
+        const textInput = checkbox.nextElementSibling;
+        textInput.style.textDecoration = checkbox.checked ? 'line-through' : 'none';
+    });
+    updateEntries();
+    </script>
+{% endblock %}

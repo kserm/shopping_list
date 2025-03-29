@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Shopping Lists for {{ date.strftime('%Y-%m-%d') }}</h1>
+    
+    {% if lists %}
+        <ul class="shopping-lists">
+            {% for lst in lists %}
+                <li class="shopping-list">
+                    <div class="list-header">
+                        <span class="list-time">{{ lst.created_at.strftime('%H:%M') }}</span>
+                        <button class="modern-button" 
+                                onclick="window.location.href='{{ url_for('main.edit_list', list_id=lst.id) }}'">
+                            Edit
+                        </button>
+                    </div>
+                    <div class="list-entries">
+                        {% for entry in lst.entries.split('\n') if entry.strip() %}
+                            <div class="entry {% if entry.startswith('- [x]') %}checked{% endif %}" 
+                                data-list-id="{{ lst.id }}" data-entry-index="{{ loop.index0 }}">
+                                <input type="checkbox" {% if entry.startswith('- [x]') %}checked{% endif %}
+                                    onchange="updateEntry(this)">
+                                <span>{{ entry[5:] }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No shopping lists found for this date.</p>
+    {% endif %}
+    
+    <script>
+    async function updateEntry(checkbox) {
+        const entryDiv = checkbox.parentElement;
+        const listId = entryDiv.dataset.listId;
+        const entryIndex = entryDiv.dataset.entryIndex;
+        const isChecked = checkbox.checked;
+        
+        // Update visual state immediately
+        const span = checkbox.nextElementSibling;
+        span.style.textDecoration = isChecked ? 'line-through' : 'none';
+        
+        // Send update to server
+        try {
+            const response = await fetch(`/update_entry/${listId}/${entryIndex}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({checked: isChecked})
+            });
+            
+            if (!response.ok) {
+                throw new Error('Failed to update');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            // Revert visual state if update fails
+            checkbox.checked = !isChecked;
+            span.style.textDecoration = checkbox.checked ? 'line-through' : 'none';
+        }
+    }
+    
+    // Initialize checked state on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.entry input[type="checkbox"]').forEach(checkbox => {
+            const span = checkbox.nextElementSibling;
+            span.style.textDecoration = checkbox.checked ? 'line-through' : 'none';
+        });
+    });
+    </script>
+{% endblock %}

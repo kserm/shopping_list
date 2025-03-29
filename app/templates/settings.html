@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Settings</h1>
+    
+    <form>
+        <h3>Default Delimiter</h3>
+        <p>When adding multiple entries, separate items with:</p>
+        <input type="text" name="default_delimiter" value="," size="2">
+        
+        <h3>Theme</h3>
+        <select name="theme">
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+        </select>
+        
+        <button type="submit">Save Settings</button>
+    </form>
+{% endblock %}
