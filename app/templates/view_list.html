@@ -9,17 +9,26 @@
                 <li class="shopping-list">
                     <div class="list-header">
                         <span class="list-time">{{ lst.created_at.strftime('%H:%M') }}</span>
-                        <button class="modern-button" 
-                                onclick="window.location.href='{{ url_for('main.edit_list', list_id=lst.id) }}'">
-                            Edit
-                        </button>
+                        <div class="list-actions">
+                            <button class="modern-button" 
+                                    onclick="window.location.href='{{ url_for('main.edit_list', list_id=lst.id) }}'">
+                                Edit
+                            </button>
+                            <form action="{{ url_for('main.delete_list', list_id=lst.id) }}" method="POST" style="display: inline;">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                <button type="submit" class="modern-button cancel-button" 
+                                        onclick="return confirm('Are you sure you want to delete this list?')">
+                                    Delete
+                                </button>
+                            </form>
+                        </div>
                     </div>
                     <div class="list-entries">
                         {% for entry in lst.entries.split('\n') if entry.strip() %}
                             <div class="entry {% if entry.startswith('- [x]') %}checked{% endif %}" 
-                                data-list-id="{{ lst.id }}" data-entry-index="{{ loop.index0 }}">
+                                 data-list-id="{{ lst.id }}" data-entry-index="{{ loop.index0 }}">
                                 <input type="checkbox" {% if entry.startswith('- [x]') %}checked{% endif %}
-                                    onchange="updateEntry(this)">
+                                       onchange="updateEntry(this)">
                                 <span>{{ entry[5:] }}</span>
                             </div>
                         {% endfor %}
@@ -30,24 +39,34 @@
     {% else %}
         <p>No shopping lists found for this date.</p>
     {% endif %}
-    
+
+    <a href="{{ url_for('main.index') }}" class="back-button">Back to all lists</a>
+
+    <!-- Error Toast (hidden by default) -->
+    <div id="error-toast" style="display: none; position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: #ff3b30; color: white; padding: 12px 24px; border-radius: 8px; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.2);">
+        Error saving changes. Please try again.
+    </div>
+
     <script>
     async function updateEntry(checkbox) {
+        // Get related elements
         const entryDiv = checkbox.parentElement;
+        const span = checkbox.nextElementSibling;
         const listId = entryDiv.dataset.listId;
         const entryIndex = entryDiv.dataset.entryIndex;
         const isChecked = checkbox.checked;
         
-        // Update visual state immediately
-        const span = checkbox.nextElementSibling;
+        // Visual feedback
+        checkbox.disabled = true;
         span.style.textDecoration = isChecked ? 'line-through' : 'none';
         
-        // Send update to server
         try {
+            // Send update to server
             const response = await fetch(`/update_entry/${listId}/${entryIndex}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'X-CSRFToken': "{{ csrf_token() }}"
                 },
                 body: JSON.stringify({checked: isChecked})
             });
@@ -57,13 +76,20 @@
             }
         } catch (error) {
             console.error('Error:', error);
-            // Revert visual state if update fails
+            // Show error message
+            const toast = document.getElementById('error-toast');
+            toast.style.display = 'block';
+            setTimeout(() => toast.style.display = 'none', 3000);
+            
+            // Revert visual state
             checkbox.checked = !isChecked;
             span.style.textDecoration = checkbox.checked ? 'line-through' : 'none';
+        } finally {
+            checkbox.disabled = false;
         }
     }
-    
-    // Initialize checked state on page load
+
+    // Initialize checkboxes on page load
     document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.entry input[type="checkbox"]').forEach(checkbox => {
             const span = checkbox.nextElementSibling;

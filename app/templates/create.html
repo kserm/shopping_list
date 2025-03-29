@@ -7,7 +7,7 @@
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         
         <div class="button-group">
-            <button type="button" class="modern-button" onclick="addEntry()">Add new entry</button>
+            <button type="button" class="modern-button" onclick="addEntry()">Add one entry</button>
             <button type="button" class="modern-button" onclick="window.location.href='{{ url_for('main.create_multiple') }}'">Add multiple entries</button>
         </div>
         
@@ -20,7 +20,7 @@
         
         <button type="submit" class="modern-button save-button">Save List</button>
     </form>
-    
+
     <script>
     function addEntry() {
         const container = document.getElementById('entries-container');
@@ -31,6 +31,7 @@
         entryDiv.innerHTML = `
             <input type="checkbox" id="check-${entryId}" onchange="updateCheckedStates()">
             <input type="text" id="entry-${entryId}" oninput="updateHiddenInput()" autofocus>
+            <button type="button" class="delete-entry" onclick="removeEntry(this)">×</button>
         `;
         
         container.appendChild(entryDiv);
@@ -38,17 +39,30 @@
         updateHiddenInput();
     }
     
+    function removeEntry(button) {
+        const container = document.getElementById('entries-container');
+        if (container.children.length === 1) {
+            if (confirm('This is the last entry. Cancel creation instead?')) {
+                window.location.href = "{{ url_for('main.index') }}";
+            }
+        } else {
+            button.parentElement.remove();
+            updateHiddenInput();
+        }
+    }
+    
     function updateHiddenInput() {
         const entries = [];
         const checkedStates = [];
-        const inputs = document.querySelectorAll('#entries-container input[type="text"]');
+        const container = document.getElementById('entries-container');
+        const inputs = container.querySelectorAll('input[type="text"]');
+        const checkboxes = container.querySelectorAll('input[type="checkbox"]');
         
-        inputs.forEach(input => {
+        inputs.forEach((input, index) => {
             if (input.value.trim()) {
-                const checkbox = input.previousElementSibling;
-                const checked = checkbox.checked ? 'x' : ' ';
+                const checked = checkboxes[index].checked ? 'x' : ' ';
                 entries.push(`- [${checked}] ${input.value.trim()}`);
-                checkedStates.push(checkbox.checked);
+                checkedStates.push(checkboxes[index].checked);
             }
         });
         
@@ -56,8 +70,9 @@
         document.getElementById('checked-states-input').value = JSON.stringify(checkedStates);
     }
     
-    function updateCheckedStates() {
-        updateHiddenInput();
-    }
+    // Initialize with one empty entry
+    document.addEventListener('DOMContentLoaded', function() {
+        addEntry();
+    });
     </script>
 {% endblock %}

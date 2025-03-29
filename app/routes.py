@@ -54,6 +54,19 @@ def create_multiple():
     
     return render_template('create_multiple.html')
 
+@main_bp.route('/delete_list/<int:list_id>', methods=['POST'])
+def delete_list(list_id):
+    lst = ShoppingList.query.get_or_404(list_id)
+    db.session.delete(lst)
+    db.session.commit()
+    
+    # For AJAX requests (entry deletion), return JSON
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return jsonify({'success': True}), 200
+    # For regular form submission (Delete button), redirect
+    else:
+        return redirect(url_for('main.index'))
+
 @main_bp.route('/update_entry/<int:list_id>/<int:entry_index>', methods=['POST'])
 def update_entry(list_id, entry_index):
     lst = ShoppingList.query.get_or_404(list_id)
@@ -75,8 +88,9 @@ def update_entry(list_id, entry_index):
             # Save to database
             lst.entries = '\n'.join(entries)
             db.session.commit()
+            return jsonify(success=True)
     
-    return jsonify(success=True)
+    return jsonify(success=False), 400
 
 @main_bp.route('/edit/<int:list_id>', methods=['GET', 'POST'])
 def edit_list(list_id):
