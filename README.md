@@ -59,3 +59,10 @@ source venv/Scripts/activate    # Windows (Bash)
 pip install -r requirements.txt
 python run.py
 ```
+
+## Authentication
+The application supports simple single user authentication.
+
+The default credentials are `admin`/`admin` for username and password.
+
+They can be changed by adding `AUTH_USERNAME` and `AUTH_PASSWORD` variables in `.env` file in the root directory.

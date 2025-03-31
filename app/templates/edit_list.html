@@ -8,7 +8,7 @@
         <div class="form-group">
             <label for="date">Date:</label>
             <input type="date" id="date" name="date" 
-                   value="{{ lst.created_at.strftime('%Y-%m-%d') }}">
+                value="{{ lst.created_at.strftime('%Y-%m-%d') }}">
         </div>
         
         <div class="entry-controls">
@@ -20,9 +20,9 @@
             {% for entry in lst.entries.split('\n') if entry.strip() %}
                 <div class="entry">
                     <input type="checkbox" {% if entry.startswith('- [x]') %}checked{% endif %}
-                           onchange="updateEntryState(this)">
+                        onchange="updateEntryState(this)">
                     <input type="text" value="{{ entry[5:] }}" 
-                           oninput="updateEntries()">
+                        oninput="updateEntries()">
                     <button type="button" class="delete-entry" onclick="removeEntry(this)">×</button>
                 </div>
             {% endfor %}
@@ -33,14 +33,11 @@
         <div class="form-actions">
             <button type="submit" class="modern-button save-button">Save Changes</button>
             <a href="{{ url_for('main.view_list', year=lst.created_at.year, month=lst.created_at.month, day=lst.created_at.day) }}" 
-               class="modern-button cancel-button">Cancel</a>
+                class="modern-button cancel-button">Cancel</a>
         </div>
         <div id="delete-list-form" style="display: none;">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         </div>
-        <!-- <form id="delete-list-form" action="{{ url_for('main.delete_list', list_id=lst.id) }}" method="POST" style="display: none;">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-        </form> -->
     </form>
     
     <script>
