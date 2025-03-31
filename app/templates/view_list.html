@@ -26,9 +26,9 @@
                     <div class="list-entries">
                         {% for entry in lst.entries.split('\n') if entry.strip() %}
                             <div class="entry {% if entry.startswith('- [x]') %}checked{% endif %}" 
-                                 data-list-id="{{ lst.id }}" data-entry-index="{{ loop.index0 }}">
+                                data-list-id="{{ lst.id }}" data-entry-index="{{ loop.index0 }}">
                                 <input type="checkbox" {% if entry.startswith('- [x]') %}checked{% endif %}
-                                       onchange="updateEntry(this)">
+                                    onchange="updateEntry(this)">
                                 <span>{{ entry[5:] }}</span>
                             </div>
                         {% endfor %}

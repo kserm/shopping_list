@@ -127,7 +127,6 @@ def edit_list(list_id):
 def settings():
     return render_template('settings.html')
 
-# Add this new route
 @main_bp.route('/list/<int:year>/<int:month>/<int:day>')
 def view_list(year, month, day):
     # Get all lists for the specific day
