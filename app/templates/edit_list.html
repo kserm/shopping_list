@@ -13,6 +13,7 @@
         
         <div class="entry-controls">
             <button type="button" class="modern-button" onclick="addEntry()">Add Entry</button>
+            <button type="button" class="modern-button" onclick="showMultiEntryModal()">Add Multiple</button>
             <button type="button" class="modern-button" onclick="removeLastEntry()">Remove Last</button>
         </div>
         
@@ -37,6 +38,17 @@
         </div>
         <div id="delete-list-form" style="display: none;">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        </div>
+        <!-- Multiple Entries Modal -->
+        <div id="multi-entry-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+            <div style="background: white; padding: 20px; border-radius: 8px; width: 80%; max-width: 500px;">
+                <h3>Add Multiple Entries</h3>
+                <textarea id="multi-entries-input" style="width: 100%; height: 150px; margin: 10px 0;" placeholder="Enter items separated by commas or new lines"></textarea>
+                <div style="display: flex; gap: 10px;">
+                    <button class="modern-button" onclick="processMultipleEntries()">Add Items</button>
+                    <button class="modern-button cancel-button" onclick="hideMultiEntryModal()">Cancel</button>
+                </div>
+            </div>
         </div>
     </form>
     
@@ -124,5 +136,41 @@
         textInput.style.textDecoration = checkbox.checked ? 'line-through' : 'none';
     });
     updateEntries();
+
+    function showMultiEntryModal() {
+        document.getElementById('multi-entry-modal').style.display = 'flex';
+        document.getElementById('multi-entries-input').focus();
+    }
+
+    function hideMultiEntryModal() {
+        document.getElementById('multi-entry-modal').style.display = 'none';
+    }
+
+    function processMultipleEntries() {
+        const input = document.getElementById('multi-entries-input').value;
+        if (!input.trim()) {
+            hideMultiEntryModal();
+            return;
+        }
+
+        // Split by either commas or new lines
+        const items = input.split(/[\n,]+/).map(item => item.trim()).filter(item => item);
+        
+        const container = document.getElementById('entries-container');
+        items.forEach(item => {
+            const entryDiv = document.createElement('div');
+            entryDiv.className = 'entry';
+            entryDiv.innerHTML = `
+                <input type="checkbox" onchange="updateEntries()">
+                <input type="text" value="${item}" oninput="updateEntries()">
+                <button type="button" class="delete-entry" onclick="removeEntry(this)">×</button>
+            `;
+            container.appendChild(entryDiv);
+        });
+
+        document.getElementById('multi-entries-input').value = '';
+        hideMultiEntryModal();
+        updateEntries();
+    }
     </script>
 {% endblock %}
