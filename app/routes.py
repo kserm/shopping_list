@@ -139,3 +139,20 @@ def view_list(year, month, day):
     ).order_by(ShoppingList.created_at.desc()).all()
     
     return render_template('view_list.html', lists=lists, date=start_date)
+
+@main_bp.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        if (request.form['username'] == os.getenv('AUTH_USERNAME') and 
+            request.form['password'] == os.getenv('AUTH_PASSWORD')):
+            resp = redirect(url_for('main.index'))
+            resp.set_cookie('auth_token', 'verified', max_age=604800, secure=True, httponly=True)
+            return resp
+        return "Invalid credentials", 401
+    return render_template('login.html')
+
+@main_bp.route('/logout')
+def logout():
+    resp = redirect(url_for('main.login'))
+    resp.delete_cookie('auth_token')
+    return resp

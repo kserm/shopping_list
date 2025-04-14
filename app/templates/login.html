@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="max-width: 400px; margin: 0 auto; padding: 20px;">
+    <h2>Login</h2>
+    <form method="POST" action="{{ url_for('main.login') }}">
+        <div style="margin-bottom: 15px;">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" 
+                autocomplete="username" style="width: 100%; padding: 8px;">
+        </div>
+        <div style="margin-bottom: 15px;">
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" 
+                autocomplete="current-password" style="width: 100%; padding: 8px;">
+        </div>
+        <button type="submit" class="modern-button" style="width: 100%;">Login</button>
+    </form>
+</div>
+{% endblock %}
