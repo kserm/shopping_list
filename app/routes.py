@@ -3,6 +3,7 @@ from datetime import datetime
 from app.models import ShoppingList, db
 from app.utils import parse_multiple_entries
 from app import auth
+import os
 
 main_bp = Blueprint('main', __name__)
 
