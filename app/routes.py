@@ -1,14 +1,25 @@
-from flask import Blueprint, render_template, request, redirect, url_for, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, jsonify, current_app
 from datetime import datetime
 from app.models import ShoppingList, db
 from app.utils import parse_multiple_entries
 from app import auth
 import os
+from functools import wraps
 
 main_bp = Blueprint('main', __name__)
 
+def conditional_auth(f):
+    """Decorator that applies authentication only if AUTH_REQUIRED is True"""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if current_app.config.get('AUTH_REQUIRED', True):
+            return auth.login_required(f)(*args, **kwargs)
+        else:
+            return f(*args, **kwargs)
+    return decorated_function
+
 @main_bp.route('/')
-@auth.login_required
+@conditional_auth
 def index():
     lists = ShoppingList.query.order_by(ShoppingList.created_at.desc()).all()
     
@@ -30,7 +41,7 @@ def index():
     return render_template('index.html', organized=organized)
 
 @main_bp.route('/create', methods=['GET', 'POST'])
-@auth.login_required
+@conditional_auth
 def create():
     if request.method == 'POST':
         entries = request.form.get('entries')
@@ -44,7 +55,7 @@ def create():
     return render_template('create.html')
 
 @main_bp.route('/create/multiple', methods=['GET', 'POST'])
-@auth.login_required
+@conditional_auth
 def create_multiple():
     if request.method == 'POST':
         text = request.form.get('text')
@@ -60,7 +71,7 @@ def create_multiple():
     return render_template('create_multiple.html')
 
 @main_bp.route('/delete_list/<int:list_id>', methods=['POST'])
-@auth.login_required
+@conditional_auth
 def delete_list(list_id):
     lst = ShoppingList.query.get_or_404(list_id)
     db.session.delete(lst)
@@ -74,7 +85,7 @@ def delete_list(list_id):
         return redirect(url_for('main.index'))
 
 @main_bp.route('/update_entry/<int:list_id>/<int:entry_index>', methods=['POST'])
-@auth.login_required
+@conditional_auth
 def update_entry(list_id, entry_index):
     lst = ShoppingList.query.get_or_404(list_id)
     entries = lst.entries.split('\n')
@@ -100,7 +111,7 @@ def update_entry(list_id, entry_index):
     return jsonify(success=False), 400
 
 @main_bp.route('/edit/<int:list_id>', methods=['GET', 'POST'])
-@auth.login_required
+@conditional_auth
 def edit_list(list_id):
     lst = ShoppingList.query.get_or_404(list_id)
     
@@ -124,11 +135,12 @@ def edit_list(list_id):
     return render_template('edit_list.html', lst=lst)
 
 @main_bp.route('/settings')
-@auth.login_required
+@conditional_auth
 def settings():
     return render_template('settings.html')
 
 @main_bp.route('/list/<int:year>/<int:month>/<int:day>')
+@conditional_auth
 def view_list(year, month, day):
     # Get all lists for the specific day
     start_date = datetime(year, month, day)
@@ -143,6 +155,10 @@ def view_list(year, month, day):
 
 @main_bp.route('/login', methods=['GET', 'POST'])
 def login():
+    # If auth is not required, redirect to main page
+    if not current_app.config.get('AUTH_REQUIRED', True):
+        return redirect(url_for('main.index'))
+    
     if request.method == 'POST':
         if (request.form['username'] == os.getenv('AUTH_USERNAME') and 
             request.form['password'] == os.getenv('AUTH_PASSWORD')):
@@ -154,6 +170,10 @@ def login():
 
 @main_bp.route('/logout')
 def logout():
+    # If auth is not required, just redirect to main page
+    if not current_app.config.get('AUTH_REQUIRED', True):
+        return redirect(url_for('main.index'))
+    
     resp = redirect(url_for('main.login'))
     resp.delete_cookie('auth_token')
     return resp

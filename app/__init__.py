@@ -26,6 +26,7 @@ def create_app():
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-here')
     app.config['AUTH_USERNAME'] = os.getenv('AUTH_USERNAME', 'admin')
     app.config['AUTH_PASSWORD'] = os.getenv('AUTH_PASSWORD', 'admin')
+    app.config['AUTH_REQUIRED'] = os.getenv('AUTH_REQUIRED', 'True').lower() in ('true', '1', 'yes', 'on')
     csrf.init_app(app)
     
     app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
