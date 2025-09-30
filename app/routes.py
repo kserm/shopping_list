@@ -142,9 +142,11 @@ def settings():
 @main_bp.route('/list/<int:year>/<int:month>/<int:day>')
 @conditional_auth
 def view_list(year, month, day):
+    from datetime import timedelta
+    
     # Get all lists for the specific day
     start_date = datetime(year, month, day)
-    end_date = datetime(year, month, day + 1) if day < 31 else datetime(year, month + 1, 1)
+    end_date = start_date + timedelta(days=1)
     
     lists = ShoppingList.query.filter(
         ShoppingList.created_at >= start_date,
